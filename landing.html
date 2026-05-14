@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3D 광고 영상 제작 — 촬영 없이 완성</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Black+Han+Sans&display=swap" rel="stylesheet">
   <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
     :root {
@@ -122,6 +122,16 @@
       background: transparent;
     }
 
+    .video-wrap video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+
     .hero-overlay {
       position: absolute;
       inset: 0;
@@ -151,7 +161,7 @@
     }
 
     .hero-title {
-      font-family: 'Bebas Neue', sans-serif;
+      font-family: 'Black Han Sans', sans-serif;
       font-size: clamp(4rem, 10vw, 9rem);
       line-height: 0.88;
       letter-spacing: -3px;
@@ -699,12 +709,13 @@
 
   <!-- HERO -->
   <section class="hero">
-    <div class="video-wrap active" data-index="0"><div id="yt-0"></div></div>
-    <div class="video-wrap" data-index="1"><div id="yt-1"></div></div>
-    <div class="video-wrap" data-index="2"><div id="yt-2"></div></div>
-    <div class="video-wrap" data-index="3"><div id="yt-3"></div></div>
-    <div class="video-wrap is-shorts" data-index="4"><div id="yt-4"></div></div>
-    <div class="video-wrap is-shorts" data-index="5"><div id="yt-5"></div></div>
+    <div class="video-wrap active" data-index="0"><video src="video/쇼츠1편%20수정편.mp4" autoplay muted loop playsinline></video></div>
+    <div class="video-wrap" data-index="1"><video src="video/쇼츠2편%20수정편.mp4" autoplay muted loop playsinline></video></div>
+    <div class="video-wrap" data-index="2"><video src="video/어그로%20영상.mp4" autoplay muted loop playsinline></video></div>
+    <div class="video-wrap" data-index="3"><video src="video/Sulwhaso_update.05.07.mp4" autoplay muted loop playsinline></video></div>
+    <div class="video-wrap" data-index="4"><video src="video/Baddest%20Update_26.05.06.mp4" autoplay muted loop playsinline></video></div>
+    <div class="video-wrap" data-index="5"><video src="video/Alice%20x%20katjes.0507.mp4" autoplay muted loop playsinline></video></div>
+    <div class="video-wrap" data-index="6"><div id="yt-6"></div></div>
     <div class="hero-overlay"></div>
     <div class="hero-content">
       <p class="hero-tag">// 3D ADVERTISING FILM — NO SHOOTING REQUIRED</p>
@@ -908,28 +919,23 @@
 
   <script>
     (function () {
-      var videos = [
-        { id: 'OXLQ7dEtEZ4', start: 0 },
-        { id: 'S2JsTS0WkqY', start: 0 },
-        { id: 'QVI0CnB9imU', start: 30, end: 60 },
-        { id: '4xZXZYNNzc8', start: 0 },
-        { id: '_EywHi01O3w', start: 0 },
-        { id: '8txgoUWfrwQ', start: 0 },
-      ];
-
-      var players = [];
+      var wraps = document.querySelectorAll('.hero .video-wrap');
       var current = 0;
-      var wraps = document.querySelectorAll('.hero-videoshow .video-wrap');
+      var ytPlayer = null;
+      var ytReady = false;
+      var YT_START = 29;
+      var YT_END = 50;
 
-      /* YouTube IFrame API 로드 */
+      /* YouTube IFrame API — 마지막 슬롯(index 6)만 사용 */
       var tag = document.createElement('script');
       tag.src = 'https://www.youtube.com/iframe_api';
       document.head.appendChild(tag);
 
       window.onYouTubeIframeAPIReady = function () {
-        videos.forEach(function (v, i) {
-          var playerVars = {
-            autoplay: 1,
+        ytPlayer = new YT.Player('yt-6', {
+          videoId: 'S2JsTS0WkqY',
+          playerVars: {
+            autoplay: 0,
             mute: 1,
             controls: 0,
             disablekb: 1,
@@ -939,39 +945,39 @@
             playsinline: 1,
             rel: 0,
             showinfo: 0,
-            start: v.start || 0,
-          };
-          if (v.end) playerVars.end = v.end;
-
-          players[i] = new YT.Player('yt-' + i, {
-            videoId: v.id,
-            playerVars: playerVars,
-            events: {
-              onReady: function (e) { e.target.playVideo(); },
-              onStateChange: (function (idx) {
-                return function (e) {
-                  /* 영상 끝나면 start 지점으로 다시 루프 */
-                  if (e.data === YT.PlayerState.ENDED) {
-                    e.target.seekTo(videos[idx].start || 0, true);
-                    e.target.playVideo();
-                  }
-                };
-              })(i),
+            start: YT_START,
+            end: YT_END,
+          },
+          events: {
+            onReady: function () { ytReady = true; },
+            onStateChange: function (e) {
+              if (e.data === YT.PlayerState.ENDED) {
+                e.target.seekTo(YT_START, true);
+                e.target.playVideo();
+              }
             },
-          });
+          },
         });
       };
 
+      function activate(idx) {
+        wraps[current].classList.remove('active');
+        current = idx;
+        wraps[current].classList.add('active');
+
+        var vid = wraps[current].querySelector('video');
+        if (vid) {
+          vid.currentTime = 0;
+          vid.play();
+        } else if (ytReady && ytPlayer) {
+          ytPlayer.seekTo(YT_START, true);
+          ytPlayer.playVideo();
+        }
+      }
+
       /* 5초마다 다음 영상으로 전환 */
       setInterval(function () {
-        wraps[current].classList.remove('active');
-        current = (current + 1) % wraps.length;
-        wraps[current].classList.add('active');
-        var p = players[current];
-        if (p && p.seekTo) {
-          p.seekTo(videos[current].start || 0, true);
-          p.playVideo();
-        }
+        activate((current + 1) % wraps.length);
       }, 5000);
     })();
   </script>
