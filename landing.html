@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D 광고 영상 제작 — 촬영 없이 완성</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green: #1ed760;
+      --black: #000000;
+      --white: #ffffff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--black);
+      color: var(--white);
+      font-family: 'DM Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      padding: 1.4rem 4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.4rem;
+      letter-spacing: 0.12em;
+      color: var(--green);
+    }
+
+    .nav-cta {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      color: var(--black);
+      background: var(--green);
+      padding: 0.6rem 1.4rem;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .nav-cta:hover {
+      opacity: 0.82;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      height: 100vh;
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 3;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 900px;
+      width: 100%;
+      padding: 2rem;
+    }
+
+    .hero-videoshow {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .hero-videoshow::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: rgba(0,0,0,0.55);
+      background-image: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.6) 100%);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .video-wrap {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 1.4s ease;
+    }
+
+    .video-wrap.active {
+      opacity: 1;
+    }
+
+    /* 뷰포트 비율 무관하게 영상이 화면을 꽉 채우는 커버 처리 */
+    .video-wrap iframe {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100vw;
+      height: 56.25vw;
+      min-height: 100vh;
+      min-width: 177.78vh;
+      transform: translate(-50%, -50%);
+      border: 0;
+    }
+
+    .hero-tag {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      color: var(--green);
+      margin-bottom: 2rem;
+    }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 10vw, 9rem);
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+      max-width: 900px;
+    }
+
+    .hero-title em {
+      font-style: normal;
+      color: var(--green);
+    }
+
+    .hero-sub {
+      margin-top: 2.4rem;
+      font-size: 0.95rem;
+      font-weight: 300;
+      line-height: 1.9;
+      color: rgba(255,255,255,0.7);
+      max-width: 480px;
+      text-align: center;
+    }
+
+    .hero-sub strong {
+      color: var(--white);
+      font-weight: 500;
+    }
+
+    .hero-actions {
+      margin-top: 3.2rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      color: var(--black);
+      background: var(--green);
+      padding: 1rem 2.4rem;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      display: inline-block;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.82;
+    }
+
+    .btn-secondary {
+      font-size: 0.82rem;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.5);
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding-bottom: 2px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      color: var(--white);
+      border-color: var(--white);
+    }
+
+    .hero-scroll {
+      margin-top: 6rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .hero-scroll::before {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 1px;
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* ── STATS ── */
+    .stats {
+      padding: 4rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 6vw, 5rem);
+      color: var(--green);
+      line-height: 1;
+    }
+
+    .stat-label {
+      margin-top: 0.6rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      color: rgba(255,255,255,0.45);
+    }
+
+    /* ── SECTION COMMON ── */
+    section {
+      padding: 6rem 4rem;
+    }
+
+    .section-tag {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.35em;
+      color: var(--green);
+      margin-bottom: 1.4rem;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.8rem, 5vw, 4.5rem);
+      line-height: 1.05;
+      letter-spacing: 0.02em;
+      max-width: 700px;
+    }
+
+    .section-title em {
+      font-style: normal;
+      color: var(--green);
+    }
+
+    /* ── WHY ── */
+    .why-grid {
+      margin-top: 4rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .why-item {
+      background: var(--black);
+      padding: 2.8rem 2.4rem;
+      transition: background 0.3s;
+    }
+
+    .why-item:hover {
+      background: rgba(30,215,96,0.04);
+    }
+
+    .why-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.5rem;
+      color: rgba(30,215,96,0.2);
+      line-height: 1;
+      margin-bottom: 1.2rem;
+    }
+
+    .why-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.8rem;
+    }
+
+    .why-desc {
+      font-size: 0.8rem;
+      font-weight: 300;
+      line-height: 1.85;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* ── PROCESS ── */
+    .process {
+      background: rgba(255,255,255,0.02);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .process-steps {
+      margin-top: 4rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0;
+      position: relative;
+    }
+
+    .process-step {
+      padding: 2.4rem 2rem;
+      position: relative;
+    }
+
+    .process-step::after {
+      content: '→';
+      position: absolute;
+      right: -0.6rem;
+      top: 2.8rem;
+      color: var(--green);
+      font-size: 1.2rem;
+    }
+
+    .process-step:last-child::after {
+      display: none;
+    }
+
+    .step-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.2em;
+      color: var(--green);
+      margin-bottom: 1rem;
+    }
+
+    .step-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.8rem;
+    }
+
+    .step-desc {
+      font-size: 0.78rem;
+      font-weight: 300;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.45);
+    }
+
+    /* ── PACKAGES ── */
+    .packages-grid {
+      margin-top: 4rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .package-card {
+      background: var(--black);
+      padding: 3rem 2.4rem;
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: background 0.3s, border-color 0.3s, transform 0.3s;
+      transform: translateY(0);
+    }
+
+    .package-card.featured {
+      background: var(--black);
+      border: 1px solid rgba(255,255,255,0.1);
+      margin: 0;
+    }
+
+    .package-card:hover,
+    .package-card.featured:hover {
+      background: rgba(30,215,96,0.05);
+      border-color: var(--green);
+      transform: translateY(-8px);
+    }
+
+    .package-badge {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      color: var(--black);
+      background: var(--green);
+      padding: 0.3rem 0.8rem;
+      display: inline-block;
+      margin-bottom: 1.6rem;
+    }
+
+    .package-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+
+    .package-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      color: var(--green);
+      line-height: 1.1;
+    }
+
+    .package-price span {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.4);
+      font-weight: 300;
+    }
+
+    .package-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+      margin: 1.8rem 0;
+    }
+
+    .package-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+
+    .package-features li {
+      font-size: 0.8rem;
+      font-weight: 300;
+      color: rgba(255,255,255,0.65);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      line-height: 1.5;
+    }
+
+    .package-features li::before {
+      content: '—';
+      color: var(--green);
+      flex-shrink: 0;
+    }
+
+    .package-cta {
+      margin-top: 2.4rem;
+      display: block;
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      padding: 0.9rem;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: var(--white);
+      transition: all 0.2s;
+    }
+
+    .package-card.featured .package-cta {
+      background: transparent;
+      color: var(--white);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .package-cta:hover,
+    .package-card.featured .package-cta:hover {
+      border-color: var(--green);
+      color: var(--green);
+      opacity: 1;
+    }
+
+    /* ── TOOLS ── */
+    .tools-section {
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .tools-list {
+      margin-top: 3rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    .tool-tag {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      padding: 0.5rem 1.2rem;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.55);
+      transition: all 0.2s;
+    }
+
+    .tool-tag:hover {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    /* ── PORTFOLIO HINT ── */
+    .portfolio-hint {
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .portfolio-grid {
+      margin-top: 3rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .portfolio-item {
+      aspect-ratio: 16 / 9;
+      background: rgba(255,255,255,0.03);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      cursor: pointer;
+      transition: background 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .portfolio-item::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(30,215,96,0.08), transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .portfolio-item:hover::before {
+      opacity: 1;
+    }
+
+    .portfolio-icon {
+      font-size: 1.6rem;
+      color: rgba(30,215,96,0.35);
+    }
+
+    .portfolio-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      color: rgba(255,255,255,0.25);
+    }
+
+    /* ── CTA BANNER ── */
+    .cta-banner {
+      margin: 0 4rem 6rem;
+      border: 1px solid rgba(30,215,96,0.3);
+      padding: 5rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(30,215,96,0.07), transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-banner-tag {
+      font-size: 0.7rem;
+      letter-spacing: 0.35em;
+      color: var(--green);
+      margin-bottom: 1.6rem;
+    }
+
+    .cta-banner-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      letter-spacing: 0.02em;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .cta-banner-sub {
+      font-size: 0.85rem;
+      font-weight: 300;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 2.8rem;
+      line-height: 1.8;
+    }
+
+    .cta-banner-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      color: var(--black);
+      background: var(--green);
+      padding: 1.1rem 3rem;
+      border: none;
+      cursor: pointer;
+      display: inline-block;
+      transition: opacity 0.2s;
+      position: relative;
+    }
+
+    .cta-banner-btn:hover {
+      opacity: 0.82;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 2rem 4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.08em;
+    }
+
+    footer .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.12em;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .hero-content { padding: 1.5rem; }
+      section { padding: 4rem 1.5rem; }
+      .stats { grid-template-columns: repeat(3, 1fr); padding: 2rem 1.5rem; }
+      .stat-num { font-size: 2.8rem; }
+      .stat-label { font-size: 0.62rem; }
+      .portfolio-grid { grid-template-columns: 1fr; }
+      .cta-banner { margin: 0 1.5rem 4rem; padding: 3rem 1.5rem; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; padding: 2rem 1.5rem; }
+      .process-step::after { display: none; }
+      .packages-grid { grid-template-columns: 1fr; }
+      .package-card.featured { margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <span class="nav-logo">CJY STUDIO</span>
+    <a href="https://kmong.com" target="_blank" class="nav-cta">크몽 바로가기</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <p class="hero-tag">// 3D ADVERTISING FILM — NO SHOOTING REQUIRED</p>
+      <h1 class="hero-title">
+        촬영 없이<br>
+        <em>완성되는</em><br>
+        광고 영상
+      </h1>
+      <p class="hero-sub">
+        <strong>제품만 보내주세요.</strong><br>
+        3D 모델링부터 렌더링, 편집까지—<br>
+        스튜디오 없이도 브랜드급 광고가 만들어집니다.
+      </p>
+      <div class="hero-actions">
+        <a href="https://kmong.com" target="_blank" class="btn-primary">지금 의뢰하기</a>
+        <a href="#process" class="btn-secondary">제작 과정 보기</a>
+      </div>
+      <p class="hero-scroll">SCROLL DOWN</p>
+    </div>
+    <div class="hero-videoshow">
+      <div class="video-wrap active" data-index="0"><div id="yt-0"></div></div>
+      <div class="video-wrap" data-index="1"><div id="yt-1"></div></div>
+      <div class="video-wrap" data-index="2"><div id="yt-2"></div></div>
+      <div class="video-wrap" data-index="3"><div id="yt-3"></div></div>
+      <div class="video-wrap is-shorts" data-index="4"><div id="yt-4"></div></div>
+      <div class="video-wrap is-shorts" data-index="5"><div id="yt-5"></div></div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-item">
+      <div class="stat-num">100%</div>
+      <div class="stat-label">촬영 없이 제작</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">3D</div>
+      <div class="stat-label">Blender · After Effects</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">7일</div>
+      <div class="stat-label">기본 납기</div>
+    </div>
+  </div>
+
+  <!-- WHY -->
+  <section id="why">
+    <p class="section-tag">// WHY 3D AD FILM</p>
+    <h2 class="section-title">왜 <em>3D</em><br>광고 영상인가</h2>
+    <div class="why-grid">
+      <div class="why-item">
+        <div class="why-num">01</div>
+        <h3 class="why-title">스튜디오 비용 ZERO</h3>
+        <p class="why-desc">촬영 장비·스튜디오 대여·모델 섭외 없이도 고퀄리티 광고가 완성됩니다. 예산을 콘텐츠 퀄리티에 집중하세요.</p>
+      </div>
+      <div class="why-item">
+        <div class="why-num">02</div>
+        <h3 class="why-title">무한한 연출 자유</h3>
+        <p class="why-desc">현실에선 불가능한 카메라 앵글, 파티클 이펙트, 제품 분해 장면도 3D 안에선 모두 구현됩니다.</p>
+      </div>
+      <div class="why-item">
+        <div class="why-num">03</div>
+        <h3 class="why-title">브랜드 일관성 유지</h3>
+        <p class="why-desc">색상, 재질, 조명을 브랜드 가이드에 맞춰 정밀하게 조정합니다. 영상마다 다른 톤이 나오지 않습니다.</p>
+      </div>
+      <div class="why-item">
+        <div class="why-num">04</div>
+        <h3 class="why-title">빠른 수정·재활용</h3>
+        <p class="why-desc">제품 색상 변경, 텍스트 수정, 버전 분기가 파일 단위로 이루어집니다. 촬영 재의뢰 없이 해결됩니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="process" id="process">
+    <p class="section-tag">// HOW IT WORKS</p>
+    <h2 class="section-title">제작 <em>프로세스</em></h2>
+    <div class="process-steps">
+      <div class="process-step">
+        <p class="step-num">STEP 01</p>
+        <h3 class="step-title">브리핑</h3>
+        <p class="step-desc">제품 이미지·레퍼런스·브랜드 컬러를 공유해주세요. 방향성을 함께 잡습니다.</p>
+      </div>
+      <div class="process-step">
+        <p class="step-num">STEP 02</p>
+        <h3 class="step-title">3D 모델링</h3>
+        <p class="step-desc">Blender로 제품을 정밀 모델링. 재질·조명·카메라를 세팅합니다.</p>
+      </div>
+      <div class="process-step">
+        <p class="step-num">STEP 03</p>
+        <h3 class="step-title">모션 & 렌더</h3>
+        <p class="step-desc">카메라 애니메이션·파티클·이펙트 작업 후 고화질로 렌더링합니다.</p>
+      </div>
+      <div class="process-step">
+        <p class="step-num">STEP 04</p>
+        <h3 class="step-title">편집 & 납품</h3>
+        <p class="step-desc">After Effects에서 타이포·사운드·컬러그레이딩 후 최종 파일을 전달합니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PACKAGES -->
+  <section id="packages">
+    <p class="section-tag">// PACKAGES</p>
+    <h2 class="section-title">패키지 <em>안내</em></h2>
+    <div class="packages-grid">
+      <div class="package-card">
+        <h3 class="package-name">BASIC</h3>
+        <div class="package-price">150,000<span>원~</span></div>
+        <div class="package-divider"></div>
+        <ul class="package-features">
+          <li>15~30초 / 제품 1종</li>
+          <li>3D 모델링 + 렌더링</li>
+          <li>기본 카메라 모션</li>
+          <li>배경음악 포함</li>
+          <li>HD 1080p 납품</li>
+          <li>수정 2회 포함</li>
+        </ul>
+        <a href="https://kmong.com" target="_blank" class="package-cta">의뢰하기</a>
+      </div>
+      <div class="package-card featured">
+        <span class="package-badge">POPULAR</span>
+        <h3 class="package-name">STANDARD</h3>
+        <div class="package-price">300,000<span>원~</span></div>
+        <div class="package-divider"></div>
+        <ul class="package-features">
+          <li>30~60초 / 제품 1~2종</li>
+          <li>고품질 3D 모델링</li>
+          <li>파티클 · 이펙트 포함</li>
+          <li>자막 · 타이포그래피</li>
+          <li>4K UHD 납품</li>
+          <li>수정 3회 포함</li>
+          <li>SNS 세로형 추가 제공</li>
+        </ul>
+        <a href="https://kmong.com" target="_blank" class="package-cta">의뢰하기</a>
+      </div>
+      <div class="package-card">
+        <h3 class="package-name">PREMIUM</h3>
+        <div class="package-price">500,000<span>원~</span></div>
+        <div class="package-divider"></div>
+        <ul class="package-features">
+          <li>60초 이상 / 제품 다수</li>
+          <li>풀 씬 환경 제작</li>
+          <li>고급 렌더링 · 글로우 처리</li>
+          <li>브랜드 전용 컬러 시스템</li>
+          <li>4K + 쇼츠 버전 포함</li>
+          <li>수정 무제한</li>
+          <li>원본 파일 제공</li>
+        </ul>
+        <a href="https://kmong.com" target="_blank" class="package-cta">의뢰하기</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOOLS -->
+  <section class="tools-section">
+    <p class="section-tag">// TOOLS & SOFTWARE</p>
+    <h2 class="section-title">사용 <em>툴</em></h2>
+    <div class="tools-list">
+      <span class="tool-tag">BLENDER</span>
+      <span class="tool-tag">AFTER EFFECTS</span>
+      <span class="tool-tag">PREMIERE PRO</span>
+      <span class="tool-tag">PHOTOSHOP</span>
+      <span class="tool-tag">CYCLES RENDER</span>
+      <span class="tool-tag">EEVEE RENDER</span>
+      <span class="tool-tag">MOTION GRAPHICS</span>
+      <span class="tool-tag">PARTICLE SIM</span>
+      <span class="tool-tag">COLOR GRADING</span>
+    </div>
+  </section>
+
+  <!-- PORTFOLIO HINT -->
+  <section class="portfolio-hint">
+    <p class="section-tag">// PORTFOLIO</p>
+    <h2 class="section-title">작업 <em>예시</em></h2>
+    <div class="portfolio-grid">
+      <div class="portfolio-item">
+        <div class="portfolio-icon">▶</div>
+        <p class="portfolio-label">뷰티 · 코스메틱</p>
+      </div>
+      <div class="portfolio-item">
+        <div class="portfolio-icon">▶</div>
+        <p class="portfolio-label">식음료 · 패키지</p>
+      </div>
+      <div class="portfolio-item">
+        <div class="portfolio-icon">▶</div>
+        <p class="portfolio-label">전자기기 · 테크</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BANNER -->
+  <div class="cta-banner">
+    <p class="cta-banner-tag">// START YOUR PROJECT</p>
+    <h2 class="cta-banner-title">지금 바로 시작하세요</h2>
+    <p class="cta-banner-sub">
+      제품 이미지 한 장으로 광고 영상이 완성됩니다.<br>
+      크몽 채팅으로 먼저 문의해보세요.
+    </p>
+    <a href="https://kmong.com" target="_blank" class="cta-banner-btn">크몽에서 의뢰하기</a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-logo">CJY STUDIO</span>
+    <span>3D AD FILM · NO SHOOTING · BRAND MOTION</span>
+    <span>fprh0303@gmail.com</span>
+  </footer>
+
+  <script>
+    (function () {
+      var videos = [
+        { id: 'OXLQ7dEtEZ4', start: 0 },
+        { id: 'S2JsTS0WkqY', start: 0 },
+        { id: 'QVI0CnB9imU', start: 30, end: 60 },
+        { id: '4xZXZYNNzc8', start: 0 },
+        { id: '_EywHi01O3w', start: 0 },
+        { id: '8txgoUWfrwQ', start: 0 },
+      ];
+
+      var players = [];
+      var current = 0;
+      var wraps = document.querySelectorAll('.hero-videoshow .video-wrap');
+
+      /* YouTube IFrame API 로드 */
+      var tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+
+      window.onYouTubeIframeAPIReady = function () {
+        videos.forEach(function (v, i) {
+          var playerVars = {
+            autoplay: 1,
+            mute: 1,
+            controls: 0,
+            disablekb: 1,
+            fs: 0,
+            iv_load_policy: 3,
+            modestbranding: 1,
+            playsinline: 1,
+            rel: 0,
+            start: v.start || 0,
+          };
+          if (v.end) playerVars.end = v.end;
+
+          players[i] = new YT.Player('yt-' + i, {
+            videoId: v.id,
+            playerVars: playerVars,
+            events: {
+              onReady: function (e) { e.target.playVideo(); },
+              onStateChange: (function (idx) {
+                return function (e) {
+                  /* 영상 끝나면 start 지점으로 다시 루프 */
+                  if (e.data === YT.PlayerState.ENDED) {
+                    e.target.seekTo(videos[idx].start || 0, true);
+                    e.target.playVideo();
+                  }
+                };
+              })(i),
+            },
+          });
+        });
+      };
+
+      /* 5초마다 다음 영상으로 전환 */
+      setInterval(function () {
+        wraps[current].classList.remove('active');
+        current = (current + 1) % wraps.length;
+        wraps[current].classList.add('active');
+        var p = players[current];
+        if (p && p.seekTo) {
+          p.seekTo(videos[current].start || 0, true);
+          p.playVideo();
+        }
+      }, 5000);
+    })();
+  </script>
+</body>
+</html>
