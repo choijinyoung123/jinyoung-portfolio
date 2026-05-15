@@ -165,18 +165,19 @@
       pointer-events: none;
     }
 
-    /* 초기 로드 및 전환 시 잠깐 가리는 검정 레이어 */
-    .hero-load-overlay {
+    /* 각 영상 위에 올라가는 유튜브 썸네일 — 재생 버튼 등 UI 가리기 */
+    .yt-thumb {
       position: absolute;
       inset: 0;
-      background: #000;
-      z-index: 6;
+      z-index: 3;
+      background-size: cover;
+      background-position: center;
       opacity: 1;
       transition: opacity 0.8s ease;
       pointer-events: none;
     }
 
-    .hero-load-overlay.hidden {
+    .yt-thumb.fading {
       opacity: 0;
     }
 
@@ -750,14 +751,28 @@
   <!-- HERO -->
   <section class="hero">
     <div class="hero-video-wrapper">
-      <div class="video-wrap active" data-index="0"><div id="yt-0"></div></div>
-      <div class="video-wrap" data-index="1"><div id="yt-1"></div></div>
-      <div class="video-wrap" data-index="2"><div id="yt-2"></div></div>
-      <div class="video-wrap" data-index="3"><div id="yt-3"></div></div>
-      <div class="video-wrap" data-index="4"><div id="yt-4"></div></div>
+      <div class="video-wrap active" data-index="0">
+        <div id="yt-0"></div>
+        <div class="yt-thumb" style="background-image:url('https://img.youtube.com/vi/OXLQ7dEtEZ4/maxresdefault.jpg')"></div>
+      </div>
+      <div class="video-wrap" data-index="1">
+        <div id="yt-1"></div>
+        <div class="yt-thumb" style="background-image:url('https://img.youtube.com/vi/S2JsTS0WkqY/maxresdefault.jpg')"></div>
+      </div>
+      <div class="video-wrap" data-index="2">
+        <div id="yt-2"></div>
+        <div class="yt-thumb" style="background-image:url('https://img.youtube.com/vi/4xZXZYNNzc8/maxresdefault.jpg')"></div>
+      </div>
+      <div class="video-wrap" data-index="3">
+        <div id="yt-3"></div>
+        <div class="yt-thumb" style="background-image:url('https://img.youtube.com/vi/_EywHi01O3w/maxresdefault.jpg')"></div>
+      </div>
+      <div class="video-wrap" data-index="4">
+        <div id="yt-4"></div>
+        <div class="yt-thumb" style="background-image:url('https://img.youtube.com/vi/8txgoUWfrwQ/maxresdefault.jpg')"></div>
+      </div>
     </div>
     <div class="hero-overlay"></div>
-    <div class="hero-load-overlay"></div>
     <div class="hero-content">
       <p class="hero-tag">// 3D ADVERTISING FILM — NO SHOOTING REQUIRED</p>
       <h1 class="hero-title">
@@ -971,20 +986,17 @@
       var players = [];
       var current = 0;
       var wraps = document.querySelectorAll('.hero .video-wrap');
-      var loadOverlay = document.querySelector('.hero-load-overlay');
-      var initialFaded = false;
 
-      function hideOverlay(delay) {
-        setTimeout(function () {
-          loadOverlay.classList.add('hidden');
-        }, delay || 0);
-      }
-
-      function flashOverlay() {
-        loadOverlay.classList.remove('hidden');
-        setTimeout(function () {
-          loadOverlay.classList.add('hidden');
-        }, 800);
+      function showThumb(wrap) {
+        var thumb = wrap.querySelector('.yt-thumb');
+        if (!thumb) return;
+        /* 즉시 불투명하게 리셋 (transition 없이) */
+        thumb.style.transition = 'none';
+        thumb.classList.remove('fading');
+        thumb.offsetHeight; /* reflow */
+        thumb.style.transition = '';
+        /* 1.5초 후 페이드아웃 */
+        setTimeout(function () { thumb.classList.add('fading'); }, 1500);
       }
 
       var tag = document.createElement('script');
@@ -1012,14 +1024,13 @@
             videoId: v.id,
             playerVars: pv,
             events: {
-              onReady: function (e) { e.target.playVideo(); },
+              onReady: function (e) {
+                e.target.playVideo();
+                /* 첫 번째 영상 — 페이지 로드 시 썸네일 1.5초 후 페이드아웃 */
+                if (i === 0) showThumb(wraps[0]);
+              },
               onStateChange: (function (idx) {
                 return function (e) {
-                  /* 첫 영상이 재생 시작되면 초기 오버레이 페이드아웃 */
-                  if (!initialFaded && idx === 0 && e.data === YT.PlayerState.PLAYING) {
-                    initialFaded = true;
-                    hideOverlay(500);
-                  }
                   if (e.data === YT.PlayerState.ENDED) {
                     e.target.seekTo(videos[idx].start || 0, true);
                     e.target.playVideo();
@@ -1031,12 +1042,12 @@
         });
       };
 
-      /* 5초마다 전환 — 전환 순간 0.8초 오버레이로 가리기 */
+      /* 5초마다 전환 — 썸네일 즉시 표시 → 1.5초 후 페이드아웃 */
       setInterval(function () {
-        flashOverlay();
         wraps[current].classList.remove('active');
         current = (current + 1) % wraps.length;
         wraps[current].classList.add('active');
+        showThumb(wraps[current]);
         var p = players[current];
         if (p && p.seekTo) {
           p.seekTo(videos[current].start || 0, true);
