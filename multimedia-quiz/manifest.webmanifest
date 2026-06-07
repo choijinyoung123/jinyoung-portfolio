@@ -1,0 +1,19 @@
+{
+  "name": "멀티미디어 필기 퀴즈",
+  "short_name": "필기퀴즈",
+  "description": "멀티미디어콘텐츠제작전문가 필기 문제은행 학습 앱",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#0f766e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

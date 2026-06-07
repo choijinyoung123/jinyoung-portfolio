@@ -21,9 +21,18 @@
         <h1>필기 문제은행 퀴즈</h1>
       </div>
       <div class="stats" aria-label="오늘 학습 통계">
-        <div><span id="todaySolved">0</span><small>푼 문제</small></div>
-        <div><span id="todayCorrect">0</span><small>맞힘</small></div>
-        <div><span id="todayWrong">0</span><small>틀림</small></div>
+        <div>
+          <span id="todaySolved">0</span>
+          <small>푼 문제</small>
+        </div>
+        <div>
+          <span id="todayCorrect">0</span>
+          <small>맞힘</small>
+        </div>
+        <div>
+          <span id="todayWrong">0</span>
+          <small>틀림</small>
+        </div>
       </div>
     </header>
 
@@ -51,14 +60,20 @@
         <button id="exportBtn" type="button">결과 내보내기</button>
       </section>
 
-      <section class="status" id="statusBox">내장 문제은행을 불러오는 중입니다.</section>
+      <section class="status" id="statusBox">
+        내장 문제은행을 불러오는 중입니다.
+      </section>
+
       <section id="quizList" class="quiz-list" aria-live="polite"></section>
     </main>
   </div>
 
   <template id="questionTemplate">
     <article class="question-card">
-      <div class="question-head"><span class="badge question-number"></span><span class="subject"></span></div>
+      <div class="question-head">
+        <span class="badge question-number"></span>
+        <span class="subject"></span>
+      </div>
       <p class="question-text"></p>
       <div class="choices"></div>
       <div class="answer-box"></div>
