@@ -150,6 +150,115 @@ h1 {
   padding: 14px;
 }
 
+.exam-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(220px, 0.9fr);
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+}
+
+.exam-summary strong {
+  display: block;
+  color: #312e81;
+  font-size: 1.25rem;
+  font-weight: 950;
+}
+
+.exam-summary p {
+  margin: 4px 0 0;
+  color: #475569;
+  font-weight: 750;
+}
+
+.exam-label {
+  display: inline-block;
+  margin-bottom: 4px;
+  border-radius: 999px;
+  background: #ede9fe;
+  color: #5b21b6;
+  padding: 4px 9px;
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.score-meter {
+  align-self: center;
+}
+
+.meter-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: #475569;
+  font-weight: 850;
+}
+
+.meter-top span {
+  color: #0f172a;
+  font-size: 1.35rem;
+  font-weight: 950;
+}
+
+.meter-track {
+  position: relative;
+  overflow: hidden;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.12);
+}
+
+.meter-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #38bdf8, #8b5cf6, #f472b6);
+  transition: width 240ms ease;
+}
+
+.cutline {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  left: 60%;
+  width: 2px;
+  background: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.22);
+}
+
+.subject-breakdown {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.subject-pill {
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 5px 10px;
+}
+
+.subject-pill.pass {
+  border-color: #86efac;
+  color: #047857;
+}
+
+.subject-pill.fail {
+  border-color: #fecdd3;
+  color: #be123c;
+}
+
 .field label {
   display: block;
   margin-bottom: 6px;
@@ -330,6 +439,7 @@ textarea {
   }
 
   .top,
+  .exam-panel,
   .loader,
   .toolbar {
     grid-template-columns: 1fr;

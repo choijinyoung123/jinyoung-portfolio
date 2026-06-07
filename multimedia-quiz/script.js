@@ -32,6 +32,12 @@ const els = {
   gradeBtn: document.getElementById("gradeBtn"),
   retryWrongBtn: document.getElementById("retryWrongBtn"),
   exportBtn: document.getElementById("exportBtn"),
+  examStatus: document.getElementById("examStatus"),
+  examMessage: document.getElementById("examMessage"),
+  examPercent: document.getElementById("examPercent"),
+  examMargin: document.getElementById("examMargin"),
+  examBar: document.getElementById("examBar"),
+  subjectBreakdown: document.getElementById("subjectBreakdown"),
   statusBox: document.getElementById("statusBox"),
   quizList: document.getElementById("quizList"),
   template: document.getElementById("questionTemplate"),
@@ -43,6 +49,7 @@ const els = {
 loadStats();
 loadWrongQuestions();
 renderStats();
+renderExamAssessment(null);
 loadEmbeddedQuestions();
 registerServiceWorker();
 
@@ -253,9 +260,11 @@ function detectType(choices, answer) {
 }
 
 function startSet(questions) {
+  questions.forEach((question) => delete question.lastCorrect);
   state.currentSet = questions;
   state.gradedIds.clear();
   renderQuiz(questions);
+  renderExamAssessment(null);
   els.gradeBtn.disabled = questions.length === 0;
   setStatus(`${questions.length}문제를 출제했습니다.`);
 }
@@ -323,6 +332,7 @@ function gradeCurrentSet() {
 
     const userAnswer = card.dataset.userAnswer || "";
     const correct = isCorrect(userAnswer, question);
+    question.lastCorrect = correct;
     const result = card.querySelector(".result");
     result.className = `result ${correct ? "correct" : "wrong"}`;
     result.textContent = correct ? `${pickPraise()} 정답: ${question.answer}` : `괜찮아요. 이 문제는 다시 보면 바로 잡힙니다. 정답: ${question.answer}`;
@@ -346,6 +356,7 @@ function gradeCurrentSet() {
   saveStats();
   saveWrongQuestions();
   renderStats();
+  renderExamAssessment(buildAssessment(state.currentSet));
   setStatus(`채점 완료: ${newlyCorrect}개 정답, ${newlyWrong}개 오답`);
 }
 
@@ -354,6 +365,7 @@ function exportResults() {
     app: "멀티미디어콘텐츠제작전문가 필기 퀴즈",
     exportedAt: new Date().toISOString(),
     stats: state.stats,
+    latestAssessment: buildAssessment(state.currentSet),
     wrongQuestions: uniqueQuestions(state.wrongQuestions).map((question) => ({
       id: question.id,
       subject: question.subject,
@@ -373,6 +385,76 @@ function exportResults() {
   link.remove();
   URL.revokeObjectURL(url);
   setStatus("결과 파일을 내보냈습니다. 이 JSON 파일을 Codex에 올리면 약점 분석을 할 수 있습니다.");
+}
+
+function buildAssessment(questions) {
+  const graded = (questions || []).filter((question) => typeof question.lastCorrect === "boolean");
+  const total = graded.length;
+  const correct = graded.filter((question) => question.lastCorrect).length;
+  const percent = total ? Math.round((correct / total) * 100) : 0;
+  const subjects = {};
+
+  graded.forEach((question) => {
+    const subject = question.subject || "과목 미분류";
+    if (!subjects[subject]) subjects[subject] = { subject, total: 0, correct: 0, percent: 0 };
+    subjects[subject].total++;
+    if (question.lastCorrect) subjects[subject].correct++;
+  });
+
+  Object.values(subjects).forEach((item) => {
+    item.percent = item.total ? Math.round((item.correct / item.total) * 100) : 0;
+  });
+
+  const subjectList = Object.values(subjects);
+  const hasSubjectFail = subjectList.some((item) => item.percent < 40);
+  const averagePass = percent >= 60;
+
+  return {
+    total,
+    correct,
+    wrong: total - correct,
+    percent,
+    averagePass,
+    subjectPass: !hasSubjectFail,
+    pass: total > 0 && averagePass && !hasSubjectFail,
+    subjects: subjectList
+  };
+}
+
+function renderExamAssessment(assessment) {
+  if (!assessment || assessment.total === 0) {
+    els.examStatus.textContent = "아직 채점 전";
+    els.examMessage.textContent = "채점하면 평균 60점, 과목별 40점 기준으로 모의 판정합니다.";
+    els.examPercent.textContent = "0%";
+    els.examMargin.textContent = "60%까지 60% 남음";
+    els.examBar.style.width = "0%";
+    els.subjectBreakdown.textContent = "과목별 판정 대기 중";
+    return;
+  }
+
+  const margin = assessment.percent - 60;
+  els.examPercent.textContent = `${assessment.percent}%`;
+  els.examMargin.textContent = margin >= 0 ? `커트라인보다 ${margin}% 높음` : `60%까지 ${Math.abs(margin)}% 부족`;
+  els.examBar.style.width = `${Math.min(100, assessment.percent)}%`;
+
+  if (assessment.pass) {
+    els.examStatus.textContent = "합격권입니다";
+    els.examMessage.textContent = `현재 세트 ${assessment.total}문제 기준 ${assessment.correct}개 정답. 평균 커트라인을 넘겼고 과락 위험도 없습니다. 좋아요, 꽤 든든합니다.`;
+  } else if (!assessment.averagePass) {
+    els.examStatus.textContent = "평균 점수 보강 필요";
+    els.examMessage.textContent = `현재 세트 기준 ${assessment.percent}%입니다. 실제 필기 평균 합격선 60%까지 조금 더 끌어올리면 됩니다.`;
+  } else {
+    els.examStatus.textContent = "과락 위험 과목 확인";
+    els.examMessage.textContent = "평균은 괜찮지만 한 과목이 40% 아래라면 실제 시험 기준으로는 위험합니다.";
+  }
+
+  els.subjectBreakdown.innerHTML = "";
+  assessment.subjects.forEach((item) => {
+    const pill = document.createElement("span");
+    pill.className = `subject-pill ${item.percent >= 40 ? "pass" : "fail"}`;
+    pill.textContent = `${item.subject}: ${item.percent}% (${item.correct}/${item.total})`;
+    els.subjectBreakdown.appendChild(pill);
+  });
 }
 
 function isCorrect(userAnswer, question) {

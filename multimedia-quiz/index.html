@@ -37,6 +37,25 @@
     </header>
 
     <main>
+      <section class="exam-panel" aria-label="실전 합격선 판정">
+        <div class="exam-summary">
+          <span class="exam-label">실전 커트라인</span>
+          <strong id="examStatus">아직 채점 전</strong>
+          <p id="examMessage">채점하면 평균 60점, 과목별 40점 기준으로 모의 판정합니다.</p>
+        </div>
+        <div class="score-meter" aria-label="현재 세트 점수">
+          <div class="meter-top">
+            <span id="examPercent">0%</span>
+            <small id="examMargin">60%까지 60% 남음</small>
+          </div>
+          <div class="meter-track">
+            <div id="examBar" class="meter-fill"></div>
+            <span class="cutline"></span>
+          </div>
+        </div>
+        <div id="subjectBreakdown" class="subject-breakdown">과목별 판정 대기 중</div>
+      </section>
+
       <section class="panel loader">
         <div class="field">
           <label for="fileInput">questions.txt 교체 업로드</label>
