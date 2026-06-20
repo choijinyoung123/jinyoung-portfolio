@@ -28,6 +28,7 @@ const els = {
   fileInput: document.getElementById("fileInput"),
   encodingSelect: document.getElementById("encodingSelect"),
   loadSampleBtn: document.getElementById("loadSampleBtn"),
+  quickSetBtn: document.getElementById("quickSetBtn"),
   newSetBtn: document.getElementById("newSetBtn"),
   gradeBtn: document.getElementById("gradeBtn"),
   retryWrongBtn: document.getElementById("retryWrongBtn"),
@@ -72,7 +73,8 @@ els.loadSampleBtn.addEventListener("click", async () => {
   }
 });
 
-els.newSetBtn.addEventListener("click", () => startSet(randomPick(state.questions, 5)));
+els.quickSetBtn.addEventListener("click", () => startSet(randomPick(state.questions, 5), "빠른 5문제를 출제했습니다."));
+els.newSetBtn.addEventListener("click", () => startSet(balancedPickBySubject(state.questions, 20), "과목별로 최대한 고르게 20문제를 출제했습니다."));
 els.retryWrongBtn.addEventListener("click", () => startWrongSet());
 els.gradeBtn.addEventListener("click", gradeCurrentSet);
 els.exportBtn.addEventListener("click", exportResults);
@@ -121,6 +123,7 @@ function loadQuestions(text, sourceName) {
   state.currentSet = [];
   state.gradedIds.clear();
   els.quizList.innerHTML = "";
+  els.quickSetBtn.disabled = parsed.length === 0;
   els.newSetBtn.disabled = parsed.length === 0;
   els.gradeBtn.disabled = true;
   els.retryWrongBtn.disabled = state.wrongQuestions.length === 0;
@@ -130,7 +133,7 @@ function loadQuestions(text, sourceName) {
     return;
   }
 
-  setStatus(`${sourceName}에서 ${parsed.length}문제를 불러왔습니다. 랜덤 5문제를 눌러 시작하세요.`);
+  setStatus(`${sourceName}에서 ${parsed.length}문제를 불러왔습니다. 과목별 20문제 또는 빠른 5문제로 시작하세요.`);
 }
 
 function parseQuestions(text) {
@@ -259,14 +262,14 @@ function detectType(choices, answer) {
   return "text";
 }
 
-function startSet(questions) {
+function startSet(questions, message = `${questions.length}문제를 출제했습니다.`) {
   questions.forEach((question) => delete question.lastCorrect);
   state.currentSet = questions;
   state.gradedIds.clear();
   renderQuiz(questions);
   renderExamAssessment(null);
   els.gradeBtn.disabled = questions.length === 0;
-  setStatus(`${questions.length}문제를 출제했습니다.`);
+  setStatus(message);
 }
 
 function startWrongSet() {
@@ -516,6 +519,31 @@ function randomPick(items, count) {
   return [...items]
     .sort(() => Math.random() - 0.5)
     .slice(0, Math.min(count, items.length));
+}
+
+function balancedPickBySubject(items, count) {
+  const groups = new Map();
+  randomPick(items, items.length).forEach((question) => {
+    const subject = question.subject || "과목 미분류";
+    if (!groups.has(subject)) groups.set(subject, []);
+    groups.get(subject).push(question);
+  });
+
+  const picked = [];
+  const subjects = [...groups.keys()];
+  while (picked.length < count && subjects.length > 0) {
+    let moved = false;
+    for (const subject of subjects) {
+      const group = groups.get(subject);
+      if (group && group.length > 0 && picked.length < count) {
+        picked.push(group.shift());
+        moved = true;
+      }
+    }
+    if (!moved) break;
+  }
+
+  return picked;
 }
 
 function pickPraise() {
