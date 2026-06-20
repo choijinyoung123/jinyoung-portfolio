@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="필기 퀴즈">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <title>멀티미디어 필기 퀴즈</title>
+  <title>멀티미디어 필기 모의고사</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
@@ -18,7 +18,7 @@
     <header class="top">
       <div>
         <p class="eyebrow">멀티미디어콘텐츠제작전문가</p>
-        <h1>필기 문제은행 퀴즈</h1>
+        <h1>필기 실전 모의고사</h1>
       </div>
       <div class="stats" aria-label="오늘 학습 통계">
         <div>
@@ -41,7 +41,7 @@
         <div class="exam-summary">
           <span class="exam-label">실전 커트라인</span>
           <strong id="examStatus">아직 채점 전</strong>
-          <p id="examMessage">채점하면 평균 60점, 과목별 40점 기준으로 모의 판정합니다.</p>
+          <p id="examMessage">실전 80문제를 채점하면 평균 60점, 과목별 40점 기준으로 판정합니다.</p>
         </div>
         <div class="score-meter" aria-label="현재 세트 점수">
           <div class="meter-top">
@@ -73,15 +73,15 @@
       </section>
 
       <section class="toolbar">
+        <button id="newSetBtn" type="button" disabled>실전 80문제</button>
         <button id="quickSetBtn" type="button" disabled>빠른 5문제</button>
-        <button id="newSetBtn" type="button" disabled>과목별 20문제</button>
         <button id="gradeBtn" type="button" disabled>채점</button>
         <button id="retryWrongBtn" type="button" disabled>오답 다시 풀기</button>
         <button id="exportBtn" type="button">결과 내보내기</button>
       </section>
 
       <section class="status" id="statusBox">
-        문제은행은 이미 앱에 들어있습니다. 교체할 때만 TXT를 업로드하세요.
+        문제은행은 이미 앱에 들어있습니다. 실전 80문제로 시작하세요.
       </section>
 
       <section id="quizList" class="quiz-list" aria-live="polite"></section>

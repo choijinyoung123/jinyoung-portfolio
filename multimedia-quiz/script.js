@@ -74,7 +74,7 @@ els.loadSampleBtn.addEventListener("click", async () => {
 });
 
 els.quickSetBtn.addEventListener("click", () => startSet(randomPick(state.questions, 5), "빠른 5문제를 출제했습니다."));
-els.newSetBtn.addEventListener("click", () => startSet(balancedPickBySubject(state.questions, 20), "과목별로 최대한 고르게 20문제를 출제했습니다."));
+els.newSetBtn.addEventListener("click", () => startSet(buildMockExam(state.questions), "실전 모의고사 80문제를 출제했습니다. 4과목, 과목당 20문제 기준입니다."));
 els.retryWrongBtn.addEventListener("click", () => startWrongSet());
 els.gradeBtn.addEventListener("click", gradeCurrentSet);
 els.exportBtn.addEventListener("click", exportResults);
@@ -133,7 +133,7 @@ function loadQuestions(text, sourceName) {
     return;
   }
 
-  setStatus(`${sourceName}에서 ${parsed.length}문제를 불러왔습니다. 과목별 20문제 또는 빠른 5문제로 시작하세요.`);
+  setStatus(`${sourceName}에서 ${parsed.length}문제를 불러왔습니다. 실전 80문제로 시작하세요.`);
 }
 
 function parseQuestions(text) {
@@ -289,7 +289,7 @@ function renderQuiz(questions) {
     const card = els.template.content.firstElementChild.cloneNode(true);
     card.dataset.questionId = question.id;
     card.querySelector(".question-number").textContent = `문제 ${question.id || index + 1}`;
-    card.querySelector(".subject").textContent = question.subject;
+    card.querySelector(".subject").textContent = `${getOfficialSubject(question)} · ${question.subject}`;
     card.querySelector(".question-text").textContent = question.question;
     card.querySelector(".explanation-text").textContent = question.explanation || "해설이 없습니다.";
     card.querySelector(".keyword-text").textContent = question.keywords ? `키워드: ${question.keywords}` : "";
@@ -410,7 +410,7 @@ function buildAssessment(questions) {
   const subjects = {};
 
   graded.forEach((question) => {
-    const subject = question.subject || "과목 미분류";
+    const subject = getOfficialSubject(question);
     if (!subjects[subject]) subjects[subject] = { subject, total: 0, correct: 0, percent: 0 };
     subjects[subject].total++;
     if (question.lastCorrect) subjects[subject].correct++;
@@ -544,6 +544,50 @@ function balancedPickBySubject(items, count) {
   }
 
   return picked;
+}
+
+function buildMockExam(items) {
+  const groups = new Map();
+  randomPick(items, items.length).forEach((question) => {
+    const subject = getOfficialSubject(question);
+    if (!groups.has(subject)) groups.set(subject, []);
+    groups.get(subject).push(question);
+  });
+
+  const officialSubjects = [
+    "멀티미디어개론",
+    "멀티미디어 기획 및 디자인",
+    "멀티미디어 저작",
+    "멀티미디어 제작 기술"
+  ];
+
+  const picked = [];
+  officialSubjects.forEach((subject) => {
+    const group = groups.get(subject) || [];
+    picked.push(...group.slice(0, 20));
+  });
+
+  if (picked.length < 80) {
+    const pickedIds = new Set(picked.map((question) => question.id));
+    const extras = randomPick(items.filter((question) => !pickedIds.has(question.id)), 80 - picked.length);
+    picked.push(...extras);
+  }
+
+  return picked.slice(0, 80);
+}
+
+function getOfficialSubject(question) {
+  const subject = question.subject || "";
+  if (/응용SW|화면구현|SW|데이터베이스|네트워크|프로그래밍|SQL|OSI/i.test(subject)) {
+    return "멀티미디어 저작";
+  }
+  if (/디자인|색채|스토리보드|영상콘텐츠|기획|애니메이션/i.test(subject)) {
+    return "멀티미디어 기획 및 디자인";
+  }
+  if (/종합편집|CGI|VFX|제작|편집|모션|렌더링/i.test(subject)) {
+    return "멀티미디어 제작 기술";
+  }
+  return "멀티미디어개론";
 }
 
 function pickPraise() {
