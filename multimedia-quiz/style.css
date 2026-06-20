@@ -392,6 +392,22 @@ textarea {
   color: #312e81;
 }
 
+.matching-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.matching-option {
+  border: 1px solid #d8b4fe;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1e293b;
+  padding: 10px 12px;
+  white-space: pre-wrap;
+  font-weight: 750;
+}
+
 .answer-box {
   margin-top: 8px;
 }

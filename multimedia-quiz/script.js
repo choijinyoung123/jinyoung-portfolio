@@ -309,6 +309,18 @@ function renderQuiz(questions) {
         choicesEl.appendChild(button);
       });
     } else {
+      if (question.choices.length > 0) {
+        const matchingList = document.createElement("div");
+        matchingList.className = "matching-options";
+        question.choices.forEach((choice, choiceIndex) => {
+          const item = document.createElement("div");
+          item.className = "matching-option";
+          item.textContent = `${choice.value || choiceIndex + 1}. ${choice.text}`;
+          matchingList.appendChild(item);
+        });
+        choicesEl.appendChild(matchingList);
+      }
+
       const textarea = document.createElement("textarea");
       textarea.placeholder = question.type === "matching" ? "예: (1-B), (2-C), (3-A)" : "정답을 입력하세요";
       textarea.addEventListener("input", () => {
