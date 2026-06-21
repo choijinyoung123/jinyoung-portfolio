@@ -11,6 +11,59 @@ const PRAISE_MESSAGES = [
   "좋습니다. 이 문제는 깔끔하게 잡았습니다."
 ];
 
+const CRAM_NOTES = [
+  {
+    title: "예비동작 vs 스쿼시 앤 스트레치",
+    answer: "점프 전 웅크림은 예비동작",
+    why: "본 동작 전에 관객에게 다음 행동을 예고하면 Anticipation, 즉 예비동작입니다. 눌리고 늘어나는 형태 변화 자체를 묻는 경우만 스쿼시 앤 스트레치입니다."
+  },
+  {
+    title: "텍스처링 vs 쉐이딩",
+    answer: "색상·질감 이미지를 입히면 텍스처링",
+    why: "텍스처링은 표면에 이미지/무늬/질감을 입히는 작업입니다. 쉐이딩은 빛 반응, 반사, 거칠기, 재질 계산 쪽입니다."
+  },
+  {
+    title: "미들웨어",
+    answer: "Apache Tomcat은 미들웨어",
+    why: "Tomcat은 웹 서버와 Java 웹 애플리케이션 사이에서 요청 처리와 실행 환경을 중개하는 WAS/서블릿 컨테이너입니다. Photoshop, Premiere Pro, Illustrator는 응용 소프트웨어입니다."
+  },
+  {
+    title: "커닝·트래킹·리딩·정렬",
+    answer: "커닝은 특정 글자 사이 간격",
+    why: "리딩은 줄 간격, 커닝은 특정 글자 쌍 간격, 트래킹은 전체 글자 간격, 정렬은 왼쪽/가운데/오른쪽 배치입니다."
+  },
+  {
+    title: "크라프트지와 CMYK",
+    answer: "미표백 크라프트지는 모니터 색과 유사 재현이 어렵다",
+    why: "CMYK 인쇄는 맞지만 갈색 바탕 종이에 잉크가 올라가므로 색이 탁해지고 왜곡됩니다. 그래서 모니터 색과 가장 유사하게 재현된다는 문장은 X입니다."
+  },
+  {
+    title: "RGB와 CMYK",
+    answer: "RGB는 빛, CMYK는 잉크",
+    why: "모니터는 RGB 가산혼합, 인쇄는 CMYK 감산혼합입니다. 시험에서 모니터/웹은 RGB, 인쇄/출력은 CMYK로 먼저 분류하세요."
+  },
+  {
+    title: "서브넷 마스크",
+    answer: "IP에서 네트워크 주소와 호스트 주소를 구분",
+    why: "DNS는 도메인을 IP로 바꾸는 시스템이고, 서브넷 마스크는 IP 주소를 네트워크 부분과 호스트 부분으로 나누는 기준입니다."
+  },
+  {
+    title: "SELECT / UPDATE / DELETE / INSERT",
+    answer: "조회 SELECT, 수정 UPDATE, 삭제 DELETE, 삽입 INSERT",
+    why: "SQL 기본 DML은 기능 단어 그대로 외우면 됩니다. 테이블 생성은 CREATE TABLE로 DDL입니다."
+  },
+  {
+    title: "OSI 7계층 핵심",
+    answer: "물리-데이터링크-네트워크-전송-세션-표현-응용",
+    why: "IP/라우팅은 네트워크 계층, 포트/TCP/UDP/신뢰성은 전송 계층, 케이블/전기 신호는 물리 계층입니다."
+  },
+  {
+    title: "정보보안 3요소",
+    answer: "기밀성, 무결성, 가용성",
+    why: "편리성, 인증성 등이 보기로 섞이면 기본 3요소가 아닌 것을 고르는 문제인지 확인하세요."
+  }
+];
+
 const state = {
   questions: [],
   currentSet: [],
@@ -32,6 +85,8 @@ const els = {
   newSetBtn: document.getElementById("newSetBtn"),
   gradeBtn: document.getElementById("gradeBtn"),
   retryWrongBtn: document.getElementById("retryWrongBtn"),
+  wrongSummaryBtn: document.getElementById("wrongSummaryBtn"),
+  cramNotesBtn: document.getElementById("cramNotesBtn"),
   exportBtn: document.getElementById("exportBtn"),
   examStatus: document.getElementById("examStatus"),
   examMessage: document.getElementById("examMessage"),
@@ -77,6 +132,8 @@ els.quickSetBtn.addEventListener("click", () => startSet(randomPick(state.questi
 els.newSetBtn.addEventListener("click", () => startSet(buildMockExam(state.questions), "실전 모의고사 80문제를 출제했습니다. 4과목, 과목당 20문제 기준입니다."));
 els.retryWrongBtn.addEventListener("click", () => startWrongSet());
 els.gradeBtn.addEventListener("click", gradeCurrentSet);
+els.wrongSummaryBtn.addEventListener("click", renderWrongSummary);
+els.cramNotesBtn.addEventListener("click", renderCramNotes);
 els.exportBtn.addEventListener("click", exportResults);
 
 function loadEmbeddedQuestions() {
@@ -280,6 +337,70 @@ function startWrongSet() {
   }
   startSet(randomPick(wrongOnly, 5));
   setStatus(`오답 ${Math.min(5, wrongOnly.length)}문제를 다시 출제했습니다.`);
+}
+
+function renderWrongSummary() {
+  const wrongOnly = uniqueQuestions(state.wrongQuestions);
+  els.quizList.innerHTML = "";
+  renderExamAssessment(null);
+  els.gradeBtn.disabled = true;
+
+  if (wrongOnly.length === 0) {
+    setStatus("아직 저장된 오답이 없습니다. 실전 80문제를 채점한 뒤 다시 눌러보세요.");
+    return;
+  }
+
+  setStatus(`저장된 오답 ${wrongOnly.length}개를 정리했습니다. 시험 직전에는 문제-정답-왜 틀렸는지만 빠르게 보세요.`);
+  wrongOnly.forEach((question) => {
+    els.quizList.appendChild(createReviewCard({
+      badge: `오답 ${question.id}`,
+      subject: `${getOfficialSubject(question)} · ${question.subject}`,
+      title: question.question,
+      answer: `정답: ${question.answer}`,
+      explanation: question.explanation || "해설이 없습니다.",
+      keywords: question.keywords ? `키워드: ${question.keywords}` : ""
+    }));
+  });
+}
+
+function renderCramNotes() {
+  els.quizList.innerHTML = "";
+  renderExamAssessment(null);
+  els.gradeBtn.disabled = true;
+  setStatus("시험장 암기노트입니다. 헷갈린 구분 위주로 빠르게 훑으세요.");
+
+  CRAM_NOTES.forEach((note, index) => {
+    els.quizList.appendChild(createReviewCard({
+      badge: `암기 ${String(index + 1).padStart(2, "0")}`,
+      subject: "시험장 마지막 확인",
+      title: note.title,
+      answer: note.answer,
+      explanation: note.why,
+      keywords: ""
+    }));
+  });
+}
+
+function createReviewCard({ badge, subject, title, answer, explanation, keywords }) {
+  const card = document.createElement("article");
+  card.className = "question-card review-card";
+  card.innerHTML = `
+    <div class="question-head">
+      <span class="badge"></span>
+      <span class="subject"></span>
+    </div>
+    <p class="question-text"></p>
+    <div class="review-answer"></div>
+    <p class="review-explanation"></p>
+    <p class="keyword-text"></p>
+  `;
+  card.querySelector(".badge").textContent = badge;
+  card.querySelector(".subject").textContent = subject;
+  card.querySelector(".question-text").textContent = title;
+  card.querySelector(".review-answer").textContent = answer;
+  card.querySelector(".review-explanation").textContent = explanation;
+  card.querySelector(".keyword-text").textContent = keywords;
+  return card;
 }
 
 function renderQuiz(questions) {

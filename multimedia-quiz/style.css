@@ -286,7 +286,7 @@ textarea {
 
 .toolbar {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: 10px;
   margin: 12px 0;
 }
@@ -301,6 +301,14 @@ textarea {
 
 #exportBtn {
   background: linear-gradient(135deg, #475569, #1e293b);
+}
+
+#wrongSummaryBtn {
+  background: linear-gradient(135deg, #be123c, #7c2d12);
+}
+
+#cramNotesBtn {
+  background: linear-gradient(135deg, #7c3aed, #0ea5e9);
 }
 
 .status {
@@ -447,6 +455,24 @@ textarea {
 .explanation p {
   margin: 8px 0 0;
   white-space: pre-wrap;
+}
+
+.review-answer {
+  margin-top: 10px;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #dcfce7, #ecfeff);
+  color: #047857;
+  padding: 10px 12px;
+  font-weight: 950;
+}
+
+.review-explanation,
+.keyword-text {
+  margin: 10px 0 0;
+  color: #475569;
+  white-space: pre-wrap;
+  font-weight: 750;
 }
 
 @media (max-width: 720px) {
