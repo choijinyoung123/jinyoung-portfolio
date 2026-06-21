@@ -1,10 +1,10 @@
-const CACHE_NAME = "multimedia-quiz-pwa-v7";
+const CACHE_NAME = "multimedia-quiz-pwa-v8";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./style.css",
-  "./script.js",
-  "./manifest.webmanifest",
+  "./style.css?v=8",
+  "./script.js?v=8",
+  "./manifest.webmanifest?v=8",
   "./icon.svg"
 ];
 

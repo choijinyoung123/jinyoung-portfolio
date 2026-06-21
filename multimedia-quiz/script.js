@@ -782,7 +782,7 @@ function cssEscape(value) {
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {
+    navigator.serviceWorker.register("sw.js?v=8").catch(() => {
       setStatus("서비스 워커 등록이 막혔습니다. 배포된 HTTPS 주소에서는 오프라인 설치가 활성화됩니다.");
     });
   });
